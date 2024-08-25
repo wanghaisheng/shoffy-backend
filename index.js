@@ -5,11 +5,10 @@ const express = require("express");
 const app = express();
 const path = require('path');
 const cors = require("cors");
-const connectDB = require("./config/db");
+const { connectDB, getDB } = require("./config/db");
 const { secret } = require("./config/secret");
 const PORT = secret.port || 7000;
 const morgan = require('morgan')
-const mongoose = require('mongoose');
 const Brand = require('./model/Brand');
 const seedData = require('./seed'); // Import the seed data function
 // error handler
@@ -48,12 +47,11 @@ console.log('Imported routes:', {
   cloudinaryRoutes: !!cloudinaryRoutes
 });
 
-// connect database
 connectDB()
-  .then(async (conn) => {
+  .then(async (db) => {
     console.log('Database connected successfully');
     try {
-      await seedIfEmpty();
+      await seedIfEmpty(db);
     } catch (error) {
       console.error('Error during seeding process:', error);
     }
@@ -61,13 +59,11 @@ connectDB()
   })
   .catch(error => {
     console.error('Failed to start server:', error);
-    // Don't exit the process, let Vercel handle it
   });
 
 function startServer() {
   const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    console.log('Database status:', mongoose.connection.readyState);
   });
 
   server.on('error', (error) => {
@@ -75,16 +71,20 @@ function startServer() {
   });
 }
 
-async function seedIfEmpty() {
+async function seedIfEmpty(db) {
   console.log('Checking if database needs seeding...');
   try {
-    const brandCount = await Brand.countDocuments();
+    const brandCollection = db.collection('brands');
+    const brandCount = await brandCollection.countDocuments();
     console.log(`Current brand count: ${brandCount}`);
     
-    // Force seeding for testing
-    console.log('Forcing seeding process for testing...');
-    await seedData();
-    console.log('Seeding process completed successfully.');
+    if (brandCount === 0) {
+      console.log('Database is empty. Starting seeding process...');
+      await seedData(db);
+      console.log('Seeding process completed successfully.');
+    } else {
+      console.log('Database is not empty. Skipping seed process.');
+    }
   } catch (error) {
     console.error('Error during database check/seed process:', error);
   }
@@ -120,8 +120,12 @@ app.use('*', (req, res) => {
 // global error handler
 app.use(globalErrorHandler);
 
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+});
+
 process.on('unhandledRejection', (reason, promise) => {
-  console.log('Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 module.exports = app;

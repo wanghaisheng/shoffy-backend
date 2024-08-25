@@ -1,15 +1,13 @@
 console.log('Application starting...');
 
-require("dotenv").config();
+const { connectDB, getDB } = require('./config/db');
 const express = require("express");
 const app = express();
 const path = require('path');
 const cors = require("cors");
-const connectDB = require("./config/db");
 const { secret } = require("./config/secret");
 const PORT = secret.port || 7000;
 const morgan = require('morgan')
-const mongoose = require('mongoose');
 const Brand = require('./model/Brand');
 const seedData = require('./seed'); // Import the seed data function
 // error handler
@@ -36,10 +34,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // connect database
 connectDB()
-  .then(async () => {
+  .then(async (db) => {
     console.log('Database connected successfully');
     try {
-      await seedIfEmpty();
+      await seedIfEmpty(db);
     } catch (error) {
       console.error('Error during seeding process:', error);
     }
@@ -52,7 +50,6 @@ connectDB()
 function startServer() {
   const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    console.log('Database status:', mongoose.connection.readyState);
   });
 
   server.on('error', (error) => {
@@ -60,15 +57,23 @@ function startServer() {
   });
 }
 
-async function seedIfEmpty() {
+async function seedIfEmpty(db) {
   console.log('Checking if database needs seeding...');
-  const brandCount = await Brand.countDocuments();
-  console.log(`Current brand count: ${brandCount}`);
-  
-  // Force seeding for testing
-  console.log('Forcing seeding process for testing...');
-  await seedData();
-  console.log('Seeding process completed successfully.');
+  try {
+    const brandCollection = db.collection('brands');
+    const brandCount = await brandCollection.countDocuments();
+    console.log(`Current brand count: ${brandCount}`);
+    
+    if (brandCount === 0) {
+      console.log('Database is empty. Starting seeding process...');
+      await seedData(db);
+      console.log('Seeding process completed successfully.');
+    } else {
+      console.log('Database is not empty. Skipping seed process.');
+    }
+  } catch (error) {
+    console.error('Error during database check/seed process:', error);
+  }
 }
 
 app.use("/api/user", userRoutes);
