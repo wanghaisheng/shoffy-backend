@@ -37,23 +37,31 @@ connectDB();
 // Check if the database is empty and seed if necessary
 const seedIfEmpty = async () => {
   try {
+    console.log('Waiting for database connection...');
     await mongoose.connection.waitForConnected();
+    console.log('Database connected. Checking if seeding is necessary...');
+    
     const brandCount = await Brand.countDocuments();
+    console.log(`Current brand count: ${brandCount}`);
+    
     if (brandCount === 0) {
-      console.log('Database is empty. Seeding data...');
+      console.log('Database is empty. Starting seeding process...');
       await seedData();
-      console.log('Data seeded successfully.');
+      console.log('Seeding process completed successfully.');
     } else {
       console.log('Database is not empty. Skipping seed process.');
     }
   } catch (error) {
-    console.error('Error checking/seeding database:', error);
+    console.error('Error during database check/seed process:', error);
   }
 };
 
 // Run the seed check before starting the server
 seedIfEmpty().then(() => {
-  app.listen(PORT, () => console.log(`server running on port ${PORT}`));
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log('Database status:', mongoose.connection.readyState);
+  });
 });
 
 app.use("/api/user", userRoutes);

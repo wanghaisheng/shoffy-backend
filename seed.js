@@ -28,11 +28,15 @@ const adminData = require('./utils/admin');
 
 const seedData = async () => {
   try {
+    console.log('Starting to seed brands...');
     await Brand.deleteMany();
     await Brand.insertMany(brandData);
+    console.log('Brands seeded successfully.');
 
+    console.log('Starting to seed categories...');
     await Category.deleteMany();
     await Category.insertMany(categoryData);
+    console.log('Categories seeded successfully.');
 
     await Products.deleteMany();
     await Products.insertMany(productsData);
@@ -52,9 +56,9 @@ const seedData = async () => {
     await Admin.deleteMany();
     await Admin.insertMany(adminData);
 
-    console.log('Data inserted successfully!');
+    console.log('All data inserted successfully!');
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error during seeding process:', error);
     throw error;
   }
 };
