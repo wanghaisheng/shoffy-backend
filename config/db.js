@@ -1,32 +1,29 @@
 const { MongoClient } = require('mongodb');
-const { secret } = require('./secret'); // Ensure this is correctly imported and used
+const { secret } = require('./secret');
 
 let client;
 
 const connectDB = async () => {
   console.log('Attempting to connect to MongoDB...');
-  const uri = secret.db_url; // Ensure this is correctly loaded
+  const uri = secret.db_url;
 
-  console.log('Connection URI:', uri.replace(/\/\/.*@/, '//<credentials>@')); // Mask sensitive information
+  console.log('Connection URI:', uri.replace(/\/\/.*@/, '//<credentials>@'));
 
   try {
     client = new MongoClient(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 30000, // Adjust as needed
+      serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
-      connectTimeoutMS: 30000,
-      keepAlive: true,
-      keepAliveInitialDelay: 300000
+      connectTimeoutMS: 30000
     });
 
     await client.connect();
     console.log('Connected successfully to MongoDB');
 
-    const db = client.db(); // Ensure you are connecting to the correct database
+    const db = client.db();
     console.log(`Database Name: ${db.databaseName}`);
 
-    // Test the connection
     const result = await db.command({ ping: 1 });
     console.log('Pinged your deployment. You successfully connected to MongoDB!');
 
