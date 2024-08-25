@@ -48,55 +48,10 @@ console.log('Imported routes:', {
   cloudinaryRoutes: !!cloudinaryRoutes
 });
 
-// Connect to the database
-connectDB().then(() => {
-  console.log('Database connected successfully');
-  
-  // Only start the server after the database connection is established
-  const server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+// connect database
+connectDB();
 
-  // Add error handler for the server
-  server.on('error', (error) => {
-    console.error('Server error:', error);
-  });
-
-}).catch(error => {
-  console.error('Failed to connect to the database:', error);
-  process.exit(1);
-});
-
-// Move route definitions here, after database connection
-app.use("/api/user", userRoutes);
-app.use("/api/category", categoryRoutes);
-app.use("/api/brand", brandRoutes);
-app.use("/api/product", productRoutes);
-app.use("/api/order", orderRoutes);
-app.use("/api/coupon", couponRoutes);
-app.use("/api/user-order", userOrderRoutes);
-app.use("/api/review", reviewRoutes);
-app.use("/api/cloudinary", cloudinaryRoutes);
-app.use("/api/admin", adminRoutes);
-
-// root route
-app.get("/", (req, res) => {
-  console.log('Root route accessed');
-  res.send("App is working successfully");
-});
-
-// Add a catch-all route for debugging
-app.use('*', (req, res) => {
-  console.log(`Accessed undefined route: ${req.method} ${req.originalUrl}`);
-  res.status(404).json({
-    success: false,
-    message: 'API Not Found',
-    requestedUrl: req.originalUrl
-  });
-});
-
-// global error handler
-app.use(globalErrorHandler);
+console.log('Database connection initiated.');
 
 // Check if the database is empty and seed if necessary
 const seedIfEmpty = async () => {
@@ -127,13 +82,48 @@ const seedIfEmpty = async () => {
 
 // Run the seed check before starting the server
 seedIfEmpty().then(() => {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log('Database status:', mongoose.connection.readyState);
+  });
+
+  // Add error handler for the server
+  server.on('error', (error) => {
+    console.error('Server error:', error);
   });
 }).catch(error => {
   console.error('Failed to start server:', error);
 });
+
+app.use("/api/user", userRoutes);
+app.use("/api/category", categoryRoutes);
+app.use("/api/brand", brandRoutes);
+app.use("/api/product", productRoutes);
+app.use("/api/order", orderRoutes);
+app.use("/api/coupon", couponRoutes);
+app.use("/api/user-order", userOrderRoutes);
+app.use("/api/review", reviewRoutes);
+app.use("/api/cloudinary", cloudinaryRoutes);
+app.use("/api/admin", adminRoutes);
+
+// root route
+app.get("/", (req, res) => {
+  console.log('Root route accessed');
+  res.send("App is working successfully");
+});
+
+// Add a catch-all route for debugging
+app.use('*', (req, res) => {
+  console.log(`Accessed undefined route: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({
+    success: false,
+    message: 'API Not Found',
+    requestedUrl: req.originalUrl
+  });
+});
+
+// global error handler
+app.use(globalErrorHandler);
 
 process.on('unhandledRejection', (reason, promise) => {
   console.log('Unhandled Rejection at:', promise, 'reason:', reason);
