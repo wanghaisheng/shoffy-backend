@@ -5,16 +5,13 @@ let client;
 
 const connectDB = async () => {
   console.log('Attempting to connect to MongoDB...');
-  const uri = secret.db_url;
+  // const uri = secret.db_url;
+  const uri = "mongodb+srv://admin:teblU23jwfhlMaTX@shofy.cgnql.mongodb.net/?retryWrites=true&w=majority";
 
   console.log('Connection URI:', uri.replace(/\/\/.*@/, '//<credentials>@'));
 
   try {
-    client = new MongoClient(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 60000,
-    });
+    client = new MongoClient(uri);
 
     await client.connect();
     console.log('Connected successfully to MongoDB');
