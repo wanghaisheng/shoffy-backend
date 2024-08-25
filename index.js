@@ -52,7 +52,8 @@ console.log('Imported routes:', {
 connectDB()
   .then(() => {
     console.log('Database connected successfully');
-    return seedIfEmpty();
+    // Add a small delay before checking the database
+    return new Promise(resolve => setTimeout(() => resolve(seedIfEmpty()), 500));
   })
   .then(() => {
     const server = app.listen(PORT, () => {

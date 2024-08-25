@@ -10,8 +10,11 @@ const connectDB = () => {
       useUnifiedTopology: true,
     })
     .then((conn) => {
-      console.log(`MongoDB Connected: ${conn.connection.host}`);
-      console.log(`Database Name: ${conn.connection.name}`);
+      // Use a slight delay to ensure connection is fully established
+      setTimeout(() => {
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+        console.log(`Database Name: ${conn.connection.db.databaseName}`);
+      }, 100);
       return conn;
     })
     .catch((error) => {

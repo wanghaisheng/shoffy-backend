@@ -35,17 +35,31 @@ app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // connect database
-connectDB();
+connectDB()
+  .then(() => {
+    console.log('Database connected successfully');
+    // Add a small delay before checking the database
+    return new Promise(resolve => setTimeout(() => resolve(seedIfEmpty()), 500));
+  })
+  .then(() => {
+    const server = app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log('Database status:', mongoose.connection.readyState);
+    });
 
-console.log('Database connection initiated.');
+    server.on('error', (error) => {
+      console.error('Server error:', error);
+    });
+  })
+  .catch(error => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  });
 
 // Check if the database is empty and seed if necessary
 const seedIfEmpty = async () => {
   try {
-    console.log('Waiting for database connection...');
-    await mongoose.connection.waitForConnected();
-    console.log('Database connected. Connection state:', mongoose.connection.readyState);
-    
+    console.log('Checking if database needs seeding...');
     const brandCount = await Brand.countDocuments();
     console.log(`Current brand count: ${brandCount}`);
     
@@ -58,18 +72,9 @@ const seedIfEmpty = async () => {
     }
   } catch (error) {
     console.error('Error during database check/seed process:', error);
+    throw error;
   }
 };
-
-// Run the seed check before starting the server
-seedIfEmpty().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log('Database status:', mongoose.connection.readyState);
-  });
-}).catch(error => {
-  console.error('Failed to start server:', error);
-});
 
 app.use("/api/user", userRoutes);
 app.use("/api/category", categoryRoutes);
@@ -85,26 +90,21 @@ app.use("/api/admin", adminRoutes);
 // root route
 app.get("/", (req, res) => {
   console.log('Root route accessed');
-  res.send("Apps worked successfully");
+  res.send("App is working successfully");
+});
+
+// Add a catch-all route for debugging
+app.use('*', (req, res) => {
+  console.log(`Accessed undefined route: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({
+    success: false,
+    message: 'API Not Found',
+    requestedUrl: req.originalUrl
+  });
 });
 
 // global error handler
 app.use(globalErrorHandler);
-//* handle not found
-app.use((req, res, next) => {
-  console.log('Not found route accessed:', req.originalUrl);
-  res.status(404).json({
-    success: false,
-    message: 'Not Found',
-    errorMessages: [
-      {
-        path: req.originalUrl,
-        message: 'API Not Found',
-      },
-    ],
-  });
-  next();
-});
 
 process.on('unhandledRejection', (reason, promise) => {
   console.log('Unhandled Rejection at:', promise, 'reason:', reason);
