@@ -51,7 +51,7 @@ connectDB()
   .then(async (db) => {
     console.log('Database connected successfully');
     try {
-      await seedIfEmpty(db);
+      await seedData();
     } catch (error) {
       console.error('Error during seeding process:', error);
     }
@@ -69,23 +69,6 @@ function startServer() {
   server.on('error', (error) => {
     console.error('Server error:', error);
   });
-}
-
-async function seedIfEmpty(db) {
-  console.log('Checking if database needs seeding...');
-  try {
-    const brandCollection = db.collection('brands');
-    const brandCount = await brandCollection.countDocuments();
-    console.log(`Current brand count: ${brandCount}`);
-    
-    // Force seeding for testing
-    console.log('Forcing seeding process for testing...');
-    await seedData(db);
-    console.log('Seeding process completed successfully.');
-  } catch (error) {
-    console.error('Error during database check/seed process:', error);
-    throw error;  // Rethrow the error to be caught in the main promise chain
-  }
 }
 
 app.use("/api/user", userRoutes);
