@@ -5,7 +5,7 @@ const express = require("express");
 const app = express();
 const path = require('path');
 const cors = require("cors");
-const { connectDB, getDB } = require("./config/db");
+const { connectDB, closeDB } = require("./config/db");
 const { secret } = require("./config/secret");
 const PORT = secret.port || 7000;
 const morgan = require('morgan')
@@ -47,29 +47,37 @@ console.log('Imported routes:', {
   cloudinaryRoutes: !!cloudinaryRoutes
 });
 
-connectDB()
-  .then(async (db) => {
+async function startServer() {
+  try {
+    const db = await connectDB();
     console.log('Database connected successfully');
-    try {
-      await seedData();
-    } catch (error) {
-      console.error('Error during seeding process:', error);
-    }
-    startServer();
-  })
-  .catch(error => {
+
+    const server = app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+    server.on('error', async (error) => {
+      console.error('Server error:', error);
+      await closeDB();
+    });
+
+    process.on('SIGINT', async () => {
+      await closeDB();
+      process.exit(0);
+    });
+
+    process.on('SIGTERM', async () => {
+      await closeDB();
+      process.exit(0);
+    });
+
+  } catch (error) {
     console.error('Failed to start server:', error);
-  });
-
-function startServer() {
-  const server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-
-  server.on('error', (error) => {
-    console.error('Server error:', error);
-  });
+    process.exit(1);
+  }
 }
+
+startServer();
 
 app.use("/api/user", userRoutes);
 app.use("/api/category", categoryRoutes);

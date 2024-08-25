@@ -11,26 +11,26 @@ const connectDB = async () => {
 
   try {
     client = new MongoClient(uri, {
-      serverSelectionTimeoutMS: 30000,
-      socketTimeoutMS: 45000,
-      connectTimeoutMS: 30000
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 60000,
     });
 
     await client.connect();
     console.log('Connected successfully to MongoDB');
 
-    const db = client.db();
+    const db = client.db("test"); // Make sure this matches your database name
     console.log(`Database Name: ${db.databaseName}`);
 
-    const result = await db.command({ ping: 1 });
-    console.log('Pinged your deployment. You successfully connected to MongoDB!');
+    // Test the connection by inserting a document
+    const collection = db.collection("testCollection");
+    const testDoc = { name: "Vercel Test", timestamp: new Date() };
+    const result = await collection.insertOne(testDoc);
+    console.log(`Test document inserted with _id: ${result.insertedId}`);
 
     return db;
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
-    if (error.name === 'MongoServerSelectionError') {
-      console.error('Server selection error details:', JSON.stringify(error.reason, null, 2));
-    }
     throw error;
   }
 };
@@ -39,7 +39,7 @@ const getDB = () => {
   if (!client) {
     throw new Error('Database not initialized. Call connectDB first.');
   }
-  return client.db();
+  return client.db("test"); // Make sure this matches your database name
 };
 
 const closeDB = async () => {
@@ -49,15 +49,5 @@ const closeDB = async () => {
     console.log('MongoDB connection closed.');
   }
 };
-
-process.on('SIGINT', async () => {
-  await closeDB();
-  process.exit(0);
-});
-
-process.on('SIGTERM', async () => {
-  await closeDB();
-  process.exit(0);
-});
 
 module.exports = { connectDB, getDB, closeDB };
