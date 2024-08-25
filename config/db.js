@@ -11,8 +11,6 @@ const connectDB = async () => {
 
   try {
     client = new MongoClient(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
       connectTimeoutMS: 30000
