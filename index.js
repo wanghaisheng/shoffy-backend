@@ -49,22 +49,30 @@ console.log('Imported routes:', {
 });
 
 // connect database
-connectDB();
+connectDB()
+  .then(() => {
+    console.log('Database connected successfully');
+    return seedIfEmpty();
+  })
+  .then(() => {
+    const server = app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log('Database status:', mongoose.connection.readyState);
+    });
 
-console.log('Database connection initiated.');
+    server.on('error', (error) => {
+      console.error('Server error:', error);
+    });
+  })
+  .catch(error => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  });
 
 // Check if the database is empty and seed if necessary
-const seedIfEmpty = async () => {
+async function seedIfEmpty() {
   try {
-    console.log('Waiting for database connection...');
-    
-    // Wait for the database to connect
-    if (mongoose.connection.readyState !== 1) {
-      await new Promise(resolve => mongoose.connection.once('connected', resolve));
-    }
-    
-    console.log('Database connected. Connection state:', mongoose.connection.readyState);
-    
+    console.log('Checking if database needs seeding...');
     const brandCount = await Brand.countDocuments();
     console.log(`Current brand count: ${brandCount}`);
     
@@ -77,23 +85,9 @@ const seedIfEmpty = async () => {
     }
   } catch (error) {
     console.error('Error during database check/seed process:', error);
+    throw error;
   }
-};
-
-// Run the seed check before starting the server
-seedIfEmpty().then(() => {
-  const server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log('Database status:', mongoose.connection.readyState);
-  });
-
-  // Add error handler for the server
-  server.on('error', (error) => {
-    console.error('Server error:', error);
-  });
-}).catch(error => {
-  console.error('Failed to start server:', error);
-});
+}
 
 app.use("/api/user", userRoutes);
 app.use("/api/category", categoryRoutes);

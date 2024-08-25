@@ -1,17 +1,12 @@
-const mongoose = require('mongoose');
-const { secret } = require('./secret');
-
-mongoose.set('strictQuery', false);
-
-// local url 
-const DB_URL = 'mongodb://0.0.0.0:27017/shofy'; 
-// mongodb url
-const MONGO_URI = secret.db_url;
+const mongoose = require("mongoose");
+const { secret } = require("./secret");
 
 const connectDB = () => {
   const dbName = 'test';
+  console.log('Attempting to connect to MongoDB...');
+  console.log('Connection string:', secret.db_url.replace(/\/\/.*@/, '//<credentials>@'));
   return mongoose
-    .connect(MONGO_URI, {
+    .connect(secret.db_url, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       dbName: dbName
@@ -22,8 +17,8 @@ const connectDB = () => {
       return conn;
     })
     .catch((error) => {
-      console.error(`Error: ${error.message}`);
-      process.exit(1);
+      console.error(`Error connecting to MongoDB:`, error);
+      throw error;
     });
 };
 
