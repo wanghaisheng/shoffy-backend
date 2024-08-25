@@ -8,10 +8,7 @@ const connectDB = async () => {
   console.log('Connection string:', secret.db_url.replace(/\/\/.*@/, '//<credentials>@'));
 
   try {
-    client = new MongoClient(secret.db_url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    client = new MongoClient(secret.db_url);
 
     await client.connect();
     console.log('Connected successfully to MongoDB');

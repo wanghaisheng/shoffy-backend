@@ -64,15 +64,13 @@ async function seedIfEmpty(db) {
     const brandCount = await brandCollection.countDocuments();
     console.log(`Current brand count: ${brandCount}`);
     
-    if (brandCount === 0) {
-      console.log('Database is empty. Starting seeding process...');
-      await seedData(db);
-      console.log('Seeding process completed successfully.');
-    } else {
-      console.log('Database is not empty. Skipping seed process.');
-    }
+    // Force seeding for testing
+    console.log('Forcing seeding process for testing...');
+    await seedData(db);
+    console.log('Seeding process completed successfully.');
   } catch (error) {
     console.error('Error during database check/seed process:', error);
+    throw error;
   }
 }
 
