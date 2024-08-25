@@ -24,16 +24,15 @@ const orderRoutes = require("./routes/order.routes");
 const couponRoutes = require("./routes/coupon.routes");
 const reviewRoutes = require("./routes/review.routes");
 const adminRoutes = require("./routes/admin.routes");
-// const uploadRouter = require('./routes/uploadFile.route');
 const cloudinaryRoutes = require("./routes/cloudinary.routes");
+
+console.log('Imports completed. Connecting to database...');
 
 // middleware
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
-
-console.log('Imports completed. Connecting to database...');
 
 // connect database
 connectDB();
@@ -76,7 +75,6 @@ app.use("/api/user", userRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/brand", brandRoutes);
 app.use("/api/product", productRoutes);
-// app.use('/api/upload',uploadRouter);
 app.use("/api/order", orderRoutes);
 app.use("/api/coupon", couponRoutes);
 app.use("/api/user-order", userOrderRoutes);
@@ -85,12 +83,16 @@ app.use("/api/cloudinary", cloudinaryRoutes);
 app.use("/api/admin", adminRoutes);
 
 // root route
-app.get("/", (req, res) => res.send("Apps worked successfully"));
+app.get("/", (req, res) => {
+  console.log('Root route accessed');
+  res.send("Apps worked successfully");
+});
 
 // global error handler
 app.use(globalErrorHandler);
 //* handle not found
 app.use((req, res, next) => {
+  console.log('Not found route accessed:', req.originalUrl);
   res.status(404).json({
     success: false,
     message: 'Not Found',
