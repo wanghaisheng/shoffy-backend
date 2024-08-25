@@ -25,6 +25,7 @@ const reviewsData = require('./utils/reviews');
 
 const Admin = require('./model/Admin');
 const adminData = require('./utils/admin');
+console.log('connect database successfully!');
 
 connectDB();
 const importData = async () => {
@@ -53,10 +54,10 @@ const importData = async () => {
     await Admin.deleteMany();
     await Admin.insertMany(adminData);
 
-    console.log('data inserted successfully!');
-    process.exit();
+    console.log('Data inserted successfully!');
+    process.exit(0);
   } catch (error) {
-    console.log('error', error);
+    console.error('Error:', error);
     process.exit(1);
   }
 };

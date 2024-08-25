@@ -7,6 +7,8 @@ const connectDB = require("./config/db");
 const { secret } = require("./config/secret");
 const PORT = secret.port || 7000;
 const morgan = require('morgan')
+const { exec } = require('child_process');
+const Brand = require('./model/Brand');
 // error handler
 const globalErrorHandler = require("./middleware/global-error-handler");
 // routes
@@ -30,6 +32,32 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // connect database
 connectDB();
+
+// Check if the database is empty and seed if necessary
+const seedIfEmpty = async () => {
+  try {
+    const brandCount = await Brand.countDocuments();
+    if (brandCount === 0) {
+      console.log('Database is empty. Running seed script...');
+      exec('node seed.js', (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error running seed script: ${error}`);
+          return;
+        }
+        console.log(`Seed script output: ${stdout}`);
+        if (stderr) {
+          console.error(`Seed script errors: ${stderr}`);
+        }
+      });
+    } else {
+      console.log('Database is not empty. Skipping seed script.');
+    }
+  } catch (error) {
+    console.error('Error checking database:', error);
+  }
+};
+
+seedIfEmpty();
 
 app.use("/api/user", userRoutes);
 app.use("/api/category", categoryRoutes);
