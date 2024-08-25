@@ -34,10 +34,69 @@ app.use(express.json());
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// connect database
-connectDB();
+// Explicitly log the imported routes
+console.log('Imported routes:', {
+  userRoutes: !!userRoutes,
+  categoryRoutes: !!categoryRoutes,
+  brandRoutes: !!brandRoutes,
+  userOrderRoutes: !!userOrderRoutes,
+  productRoutes: !!productRoutes,
+  orderRoutes: !!orderRoutes,
+  couponRoutes: !!couponRoutes,
+  reviewRoutes: !!reviewRoutes,
+  adminRoutes: !!adminRoutes,
+  cloudinaryRoutes: !!cloudinaryRoutes
+});
 
-console.log('Database connection initiated.');
+// Connect to the database
+connectDB().then(() => {
+  console.log('Database connected successfully');
+  
+  // Only start the server after the database connection is established
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+
+  // Add error handler for the server
+  server.on('error', (error) => {
+    console.error('Server error:', error);
+  });
+
+}).catch(error => {
+  console.error('Failed to connect to the database:', error);
+  process.exit(1);
+});
+
+// Move route definitions here, after database connection
+app.use("/api/user", userRoutes);
+app.use("/api/category", categoryRoutes);
+app.use("/api/brand", brandRoutes);
+app.use("/api/product", productRoutes);
+app.use("/api/order", orderRoutes);
+app.use("/api/coupon", couponRoutes);
+app.use("/api/user-order", userOrderRoutes);
+app.use("/api/review", reviewRoutes);
+app.use("/api/cloudinary", cloudinaryRoutes);
+app.use("/api/admin", adminRoutes);
+
+// root route
+app.get("/", (req, res) => {
+  console.log('Root route accessed');
+  res.send("App is working successfully");
+});
+
+// Add a catch-all route for debugging
+app.use('*', (req, res) => {
+  console.log(`Accessed undefined route: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({
+    success: false,
+    message: 'API Not Found',
+    requestedUrl: req.originalUrl
+  });
+});
+
+// global error handler
+app.use(globalErrorHandler);
 
 // Check if the database is empty and seed if necessary
 const seedIfEmpty = async () => {
@@ -74,41 +133,6 @@ seedIfEmpty().then(() => {
   });
 }).catch(error => {
   console.error('Failed to start server:', error);
-});
-
-app.use("/api/user", userRoutes);
-app.use("/api/category", categoryRoutes);
-app.use("/api/brand", brandRoutes);
-app.use("/api/product", productRoutes);
-app.use("/api/order", orderRoutes);
-app.use("/api/coupon", couponRoutes);
-app.use("/api/user-order", userOrderRoutes);
-app.use("/api/review", reviewRoutes);
-app.use("/api/cloudinary", cloudinaryRoutes);
-app.use("/api/admin", adminRoutes);
-
-// root route
-app.get("/", (req, res) => {
-  console.log('Root route accessed');
-  res.send("Apps worked successfully");
-});
-
-// global error handler
-app.use(globalErrorHandler);
-//* handle not found
-app.use((req, res, next) => {
-  console.log('Not found route accessed:', req.originalUrl);
-  res.status(404).json({
-    success: false,
-    message: 'Not Found',
-    errorMessages: [
-      {
-        path: req.originalUrl,
-        message: 'API Not Found',
-      },
-    ],
-  });
-  next();
 });
 
 process.on('unhandledRejection', (reason, promise) => {
