@@ -52,8 +52,7 @@ console.log('Imported routes:', {
 connectDB()
   .then(() => {
     console.log('Database connected successfully');
-    // Add a small delay before checking the database
-    return new Promise(resolve => setTimeout(() => resolve(seedIfEmpty()), 500));
+    return seedIfEmpty();
   })
   .then(() => {
     const server = app.listen(PORT, () => {
@@ -67,7 +66,6 @@ connectDB()
   })
   .catch(error => {
     console.error('Failed to start server:', error);
-    process.exit(1);
   });
 
 // Check if the database is empty and seed if necessary
@@ -86,7 +84,6 @@ async function seedIfEmpty() {
     }
   } catch (error) {
     console.error('Error during database check/seed process:', error);
-    throw error;
   }
 }
 
@@ -119,6 +116,10 @@ app.use('*', (req, res) => {
 
 // global error handler
 app.use(globalErrorHandler);
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+});
 
 process.on('unhandledRejection', (reason, promise) => {
   console.log('Unhandled Rejection at:', promise, 'reason:', reason);
