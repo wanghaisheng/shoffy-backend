@@ -1,5 +1,5 @@
 const { MongoClient } = require('mongodb');
-const { secret } = require('./config/secret'); // Ensure this is correctly imported and used
+const { secret } = require('./secret'); // Ensure this is correctly imported and used
 
 let client;
 
