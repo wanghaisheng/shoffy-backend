@@ -50,38 +50,39 @@ console.log('Imported routes:', {
 
 // connect database
 connectDB()
-  .then(() => {
+  .then(async () => {
     console.log('Database connected successfully');
-    return seedIfEmpty();
-  })
-  .then(() => {
-    const server = app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log('Database status:', mongoose.connection.readyState);
-    });
-
-    server.on('error', (error) => {
-      console.error('Server error:', error);
-    });
+    try {
+      await seedIfEmpty();
+    } catch (error) {
+      console.error('Error during seeding process:', error);
+    }
+    startServer();
   })
   .catch(error => {
     console.error('Failed to start server:', error);
   });
 
-// Check if the database is empty and seed if necessary
+function startServer() {
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log('Database status:', mongoose.connection.readyState);
+  });
+
+  server.on('error', (error) => {
+    console.error('Server error:', error);
+  });
+}
+
 async function seedIfEmpty() {
-  try {
-    console.log('Checking if database needs seeding...');
-    const brandCount = await Brand.countDocuments();
-    console.log(`Current brand count: ${brandCount}`);
-    
-    // Force seeding for testing
-    console.log('Forcing seeding process for testing...');
-    await seedData();
-    console.log('Seeding process completed successfully.');
-  } catch (error) {
-    console.error('Error during database check/seed process:', error);
-  }
+  console.log('Checking if database needs seeding...');
+  const brandCount = await Brand.countDocuments();
+  console.log(`Current brand count: ${brandCount}`);
+  
+  // Force seeding for testing
+  console.log('Forcing seeding process for testing...');
+  await seedData();
+  console.log('Seeding process completed successfully.');
 }
 
 app.use("/api/user", userRoutes);
