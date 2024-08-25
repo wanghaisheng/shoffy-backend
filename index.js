@@ -1,3 +1,5 @@
+console.log('Application starting...');
+
 require("dotenv").config();
 const express = require("express");
 const app = express();
@@ -31,15 +33,19 @@ app.use(express.json());
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+console.log('Imports completed. Connecting to database...');
+
 // connect database
 connectDB();
+
+console.log('Database connection initiated.');
 
 // Check if the database is empty and seed if necessary
 const seedIfEmpty = async () => {
   try {
     console.log('Waiting for database connection...');
     await mongoose.connection.waitForConnected();
-    console.log('Database connected. Checking if seeding is necessary...');
+    console.log('Database connected. Connection state:', mongoose.connection.readyState);
     
     const brandCount = await Brand.countDocuments();
     console.log(`Current brand count: ${brandCount}`);
@@ -62,6 +68,8 @@ seedIfEmpty().then(() => {
     console.log(`Server running on port ${PORT}`);
     console.log('Database status:', mongoose.connection.readyState);
   });
+}).catch(error => {
+  console.error('Failed to start server:', error);
 });
 
 app.use("/api/user", userRoutes);
@@ -94,6 +102,10 @@ app.use((req, res, next) => {
     ],
   });
   next();
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 module.exports = app;
