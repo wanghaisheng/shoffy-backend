@@ -43,7 +43,12 @@ console.log('Database connection initiated.');
 const seedIfEmpty = async () => {
   try {
     console.log('Waiting for database connection...');
-    await mongoose.connection.waitForConnected();
+    
+    // Wait for the database to connect
+    if (mongoose.connection.readyState !== 1) {
+      await new Promise(resolve => mongoose.connection.once('connected', resolve));
+    }
+    
     console.log('Database connected. Connection state:', mongoose.connection.readyState);
     
     const brandCount = await Brand.countDocuments();
