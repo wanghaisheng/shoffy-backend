@@ -50,7 +50,7 @@ console.log('Imported routes:', {
 
 // connect database
 connectDB()
-  .then(async () => {
+  .then(async (conn) => {
     console.log('Database connected successfully');
     try {
       await seedIfEmpty();
@@ -61,6 +61,7 @@ connectDB()
   })
   .catch(error => {
     console.error('Failed to start server:', error);
+    // Don't exit the process, let Vercel handle it
   });
 
 function startServer() {
@@ -76,13 +77,17 @@ function startServer() {
 
 async function seedIfEmpty() {
   console.log('Checking if database needs seeding...');
-  const brandCount = await Brand.countDocuments();
-  console.log(`Current brand count: ${brandCount}`);
-  
-  // Force seeding for testing
-  console.log('Forcing seeding process for testing...');
-  await seedData();
-  console.log('Seeding process completed successfully.');
+  try {
+    const brandCount = await Brand.countDocuments();
+    console.log(`Current brand count: ${brandCount}`);
+    
+    // Force seeding for testing
+    console.log('Forcing seeding process for testing...');
+    await seedData();
+    console.log('Seeding process completed successfully.');
+  } catch (error) {
+    console.error('Error during database check/seed process:', error);
+  }
 }
 
 app.use("/api/user", userRoutes);

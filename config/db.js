@@ -11,7 +11,16 @@ const connectDB = () => {
     })
     .then((conn) => {
       console.log(`MongoDB Connected: ${conn.connection.host}`);
-      console.log(`Database Name: ${conn.connection.db.databaseName}`);
+      console.log('Connection object:', JSON.stringify(conn.connection, null, 2));
+      
+      // Try to get the database name from different properties
+      const dbName = conn.connection.name || conn.connection.db?.databaseName || 'Unknown';
+      console.log(`Database Name: ${dbName}`);
+      
+      // Log more details about the connection
+      console.log('Mongoose readyState:', conn.connection.readyState);
+      console.log('Mongoose models:', Object.keys(conn.models));
+      
       return conn;
     })
     .catch((error) => {
