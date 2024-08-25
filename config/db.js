@@ -11,8 +11,11 @@ const connectDB = async () => {
     client = new MongoClient(secret.db_url, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
+      serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+      keepAlive: true,
+      keepAliveInitialDelay: 300000
     });
 
     console.log('MongoClient created, attempting to connect...');
@@ -30,7 +33,7 @@ const connectDB = async () => {
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
     if (error.name === 'MongoServerSelectionError') {
-      console.error('Server selection error details:', error.reason);
+      console.error('Server selection error details:', JSON.stringify(error.reason, null, 2));
     }
     throw error;
   }
