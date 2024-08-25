@@ -1,33 +1,34 @@
 const { MongoClient } = require('mongodb');
-const { secret } = require("./secret");
+const { secret } = require('./config/secret'); // Ensure this is correctly imported and used
 
 let client;
 
 const connectDB = async () => {
   console.log('Attempting to connect to MongoDB...');
-  console.log('Connection string:', secret.db_url.replace(/\/\/.*@/, '//<credentials>@'));
+  const uri = secret.db_url; // Ensure this is correctly loaded
+
+  console.log('Connection URI:', uri.replace(/\/\/.*@/, '//<credentials>@')); // Mask sensitive information
 
   try {
-    client = new MongoClient(secret.db_url, {
+    client = new MongoClient(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 30000,
+      serverSelectionTimeoutMS: 30000, // Adjust as needed
       socketTimeoutMS: 45000,
       connectTimeoutMS: 30000,
       keepAlive: true,
       keepAliveInitialDelay: 300000
     });
 
-    console.log('MongoClient created, attempting to connect...');
     await client.connect();
     console.log('Connected successfully to MongoDB');
 
-    const db = client.db();
+    const db = client.db(); // Ensure you are connecting to the correct database
     console.log(`Database Name: ${db.databaseName}`);
 
-    // Test the connection by running a simple command
+    // Test the connection
     const result = await db.command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log('Pinged your deployment. You successfully connected to MongoDB!');
 
     return db;
   } catch (error) {
@@ -46,4 +47,22 @@ const getDB = () => {
   return client.db();
 };
 
-module.exports = { connectDB, getDB };
+const closeDB = async () => {
+  if (client) {
+    console.log('Closing MongoDB connection...');
+    await client.close();
+    console.log('MongoDB connection closed.');
+  }
+};
+
+process.on('SIGINT', async () => {
+  await closeDB();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  await closeDB();
+  process.exit(0);
+});
+
+module.exports = { connectDB, getDB, closeDB };
