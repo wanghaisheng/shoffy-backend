@@ -25,10 +25,8 @@ const reviewsData = require('./utils/reviews');
 
 const Admin = require('./model/Admin');
 const adminData = require('./utils/admin');
-console.log('connect database successfully!');
 
-connectDB();
-const importData = async () => {
+const seedData = async () => {
   try {
     await Brand.deleteMany();
     await Brand.insertMany(brandData);
@@ -55,11 +53,10 @@ const importData = async () => {
     await Admin.insertMany(adminData);
 
     console.log('Data inserted successfully!');
-    process.exit(0);
   } catch (error) {
     console.error('Error:', error);
-    process.exit(1);
+    throw error;
   }
 };
 
-importData();
+module.exports = seedData;

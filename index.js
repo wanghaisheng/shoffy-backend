@@ -7,8 +7,9 @@ const connectDB = require("./config/db");
 const { secret } = require("./config/secret");
 const PORT = secret.port || 7000;
 const morgan = require('morgan')
-const { exec } = require('child_process');
+const mongoose = require('mongoose');
 const Brand = require('./model/Brand');
+const seedData = require('./seed'); // Import the seed data function
 // error handler
 const globalErrorHandler = require("./middleware/global-error-handler");
 // routes
@@ -36,28 +37,24 @@ connectDB();
 // Check if the database is empty and seed if necessary
 const seedIfEmpty = async () => {
   try {
+    await mongoose.connection.waitForConnected();
     const brandCount = await Brand.countDocuments();
     if (brandCount === 0) {
-      console.log('Database is empty. Running seed script...');
-      exec('node seed.js', (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error running seed script: ${error}`);
-          return;
-        }
-        console.log(`Seed script output: ${stdout}`);
-        if (stderr) {
-          console.error(`Seed script errors: ${stderr}`);
-        }
-      });
+      console.log('Database is empty. Seeding data...');
+      await seedData();
+      console.log('Data seeded successfully.');
     } else {
-      console.log('Database is not empty. Skipping seed script.');
+      console.log('Database is not empty. Skipping seed process.');
     }
   } catch (error) {
-    console.error('Error checking database:', error);
+    console.error('Error checking/seeding database:', error);
   }
 };
 
-seedIfEmpty();
+// Run the seed check before starting the server
+seedIfEmpty().then(() => {
+  app.listen(PORT, () => console.log(`server running on port ${PORT}`));
+});
 
 app.use("/api/user", userRoutes);
 app.use("/api/category", categoryRoutes);
@@ -73,8 +70,6 @@ app.use("/api/admin", adminRoutes);
 
 // root route
 app.get("/", (req, res) => res.send("Apps worked successfully"));
-
-app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 
 // global error handler
 app.use(globalErrorHandler);
