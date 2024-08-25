@@ -75,13 +75,10 @@ async function seedIfEmpty() {
     const brandCount = await Brand.countDocuments();
     console.log(`Current brand count: ${brandCount}`);
     
-    if (brandCount === 0) {
-      console.log('Database is empty. Starting seeding process...');
-      await seedData();
-      console.log('Seeding process completed successfully.');
-    } else {
-      console.log('Database is not empty. Skipping seed process.');
-    }
+    // Force seeding for testing
+    console.log('Forcing seeding process for testing...');
+    await seedData();
+    console.log('Seeding process completed successfully.');
   } catch (error) {
     console.error('Error during database check/seed process:', error);
   }
@@ -116,10 +113,6 @@ app.use('*', (req, res) => {
 
 // global error handler
 app.use(globalErrorHandler);
-
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-});
 
 process.on('unhandledRejection', (reason, promise) => {
   console.log('Unhandled Rejection at:', promise, 'reason:', reason);
