@@ -35,14 +35,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 connectDB()
   .then(async (db) => {
     console.log('Database connected successfully');
-    try {
-      await seedData();
-      console.log('Data seeded successfully');
-    } catch (error) {
-      console.error('Error seeding data:', error);
-      // Decide if you want to continue starting the server or exit
-    }
-    startServer();
+    // startServer();
   })
   .catch(error => {
     console.error('Failed to start server:', error);
