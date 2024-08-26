@@ -9,7 +9,6 @@ const { connectDB, closeDB } = require("./config/db");
 const { secret } = require("./config/secret");
 const PORT = secret.port || 7000;
 const morgan = require('morgan')
-const seedData = require('./seed'); // Import the seed data function
 const globalErrorHandler = require("./middleware/global-error-handler");
 
 // routes
@@ -50,15 +49,6 @@ async function startServer() {
   try {
     const db = await connectDB();
     console.log('Database connected successfully');
-
-    // Call seedData function
-    try {
-      await seedData();
-      console.log('Data seeded successfully');
-    } catch (error) {
-      console.error('Error seeding data:', error);
-      // Decide if you want to continue starting the server or exit
-    }
 
     // Set up routes
     app.use("/api/user", userRoutes);
