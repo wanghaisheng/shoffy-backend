@@ -4,7 +4,7 @@ let client;
 
 const connectDB = async () => {
   console.log('Attempting to connect to MongoDB...');
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGO_URI;
 
   if (!uri) {
     throw new Error('MONGODB_URI is not defined in environment variables');
