@@ -11,7 +11,7 @@ const morgan = require('morgan')
 const Brand = require('./model/Brand');
 const seedData = require('./seed'); // Import the seed data function
 // error handler
-const globalErrorHandler = require(".s/middleware/global-error-handler");
+// const globalErrorHandler = require(".s/middleware/global-error-handler");
 // routes
 const userRoutes = require("./routes/user.routes");
 const categoryRoutes = require("./routes/category.routes");
@@ -87,7 +87,7 @@ app.use('*', (req, res) => {
 });
 
 // global error handler
-app.use(globalErrorHandler);
+// app.use(globalErrorHandler);
 
 process.on('unhandledRejection', (reason, promise) => {
   console.log('Unhandled Rejection at:', promise, 'reason:', reason);
