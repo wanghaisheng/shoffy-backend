@@ -52,6 +52,15 @@ async function startServer() {
     const db = await connectDB();
     console.log('Database connected successfully');
 
+    // Call seedData function
+    try {
+      await seedData();
+      console.log('Data seeded successfully');
+    } catch (error) {
+      console.error('Error seeding data:', error);
+      // Decide if you want to continue starting the server or exit
+    }
+
     const server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

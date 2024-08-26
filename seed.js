@@ -6,12 +6,12 @@ const app = express();
 const path = require('path');
 const cors = require("cors");
 const { secret } = require("./config/secret");
-const PORT = secret.port || 7000;
+const PORT = process.env.PORT || 7000;
 const morgan = require('morgan')
 const Brand = require('./model/Brand');
 const seedData = require('./seed'); // Import the seed data function
 // error handler
-const globalErrorHandler = require("./middleware/global-error-handler");
+const globalErrorHandler = require(".s/middleware/global-error-handler");
 // routes
 const userRoutes = require("./routes/user.routes");
 const categoryRoutes = require("./routes/category.routes");
@@ -38,8 +38,10 @@ connectDB()
     console.log('Database connected successfully');
     try {
       await seedData();
+      console.log('Data seeded successfully');
     } catch (error) {
-      console.error('Error during seeding process:', error);
+      console.error('Error seeding data:', error);
+      // Decide if you want to continue starting the server or exit
     }
     startServer();
   })

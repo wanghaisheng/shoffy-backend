@@ -1,22 +1,28 @@
 const { MongoClient } = require('mongodb');
-const { secret } = require('./secret');
 
 let client;
 
 const connectDB = async () => {
   console.log('Attempting to connect to MongoDB...');
-  // const uri = secret.db_url;
-  const uri = "mongodb+srv://admin:teblU23jwfhlMaTX@shofy.cgnql.mongodb.net/?retryWrites=true&w=majority";
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    throw new Error('MONGODB_URI is not defined in environment variables');
+  }
 
   console.log('Connection URI:', uri.replace(/\/\/.*@/, '//<credentials>@'));
 
   try {
-    client = new MongoClient(uri);
+    client = new MongoClient(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 60000,
+    });
 
     await client.connect();
     console.log('Connected successfully to MongoDB');
 
-    const db = client.db("test"); // Make sure this matches your database name
+    const db = client.db();
     console.log(`Database Name: ${db.databaseName}`);
 
     // Test the connection by inserting a document
@@ -36,7 +42,7 @@ const getDB = () => {
   if (!client) {
     throw new Error('Database not initialized. Call connectDB first.');
   }
-  return client.db("test"); // Make sure this matches your database name
+  return client.db();
 };
 
 const closeDB = async () => {
