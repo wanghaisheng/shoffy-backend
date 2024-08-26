@@ -9,10 +9,9 @@ const { connectDB, closeDB } = require("./config/db");
 const { secret } = require("./config/secret");
 const PORT = secret.port || 7000;
 const morgan = require('morgan')
-const Brand = require('./model/Brand');
 const seedData = require('./seed'); // Import the seed data function
-// error handler
 const globalErrorHandler = require("./middleware/global-error-handler");
+
 // routes
 const userRoutes = require("./routes/user.routes");
 const categoryRoutes = require("./routes/category.routes");
@@ -61,6 +60,37 @@ async function startServer() {
       // Decide if you want to continue starting the server or exit
     }
 
+    // Set up routes
+    app.use("/api/user", userRoutes);
+    app.use("/api/category", categoryRoutes);
+    app.use("/api/brand", brandRoutes);
+    app.use("/api/product", productRoutes);
+    app.use("/api/order", orderRoutes);
+    app.use("/api/coupon", couponRoutes);
+    app.use("/api/user-order", userOrderRoutes);
+    app.use("/api/review", reviewRoutes);
+    app.use("/api/cloudinary", cloudinaryRoutes);
+    app.use("/api/admin", adminRoutes);
+
+    // root route
+    app.get("/", (req, res) => {
+      console.log('Root route accessed');
+      res.send("App is working successfully");
+    });
+
+    // Add a catch-all route for debugging
+    app.use('*', (req, res) => {
+      console.log(`Accessed undefined route: ${req.method} ${req.originalUrl}`);
+      res.status(404).json({
+        success: false,
+        message: 'API Not Found',
+        requestedUrl: req.originalUrl
+      });
+    });
+
+    // global error handler
+    app.use(globalErrorHandler);
+
     const server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
@@ -87,36 +117,6 @@ async function startServer() {
 }
 
 startServer();
-
-app.use("/api/user", userRoutes);
-app.use("/api/category", categoryRoutes);
-app.use("/api/brand", brandRoutes);
-app.use("/api/product", productRoutes);
-app.use("/api/order", orderRoutes);
-app.use("/api/coupon", couponRoutes);
-app.use("/api/user-order", userOrderRoutes);
-app.use("/api/review", reviewRoutes);
-app.use("/api/cloudinary", cloudinaryRoutes);
-app.use("/api/admin", adminRoutes);
-
-// root route
-app.get("/", (req, res) => {
-  console.log('Root route accessed');
-  res.send("App is working successfully");
-});
-
-// Add a catch-all route for debugging
-app.use('*', (req, res) => {
-  console.log(`Accessed undefined route: ${req.method} ${req.originalUrl}`);
-  res.status(404).json({
-    success: false,
-    message: 'API Not Found',
-    requestedUrl: req.originalUrl
-  });
-});
-
-// global error handler
-app.use(globalErrorHandler);
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);

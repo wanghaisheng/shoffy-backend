@@ -8,7 +8,6 @@ const cors = require("cors");
 const { secret } = require("./config/secret");
 const PORT = process.env.PORT || 7000;
 const morgan = require('morgan')
-const Brand = require('./model/Brand');
 const seedData = require('./seed'); // Import the seed data function
 // error handler
 // const globalErrorHandler = require(".s/middleware/global-error-handler");
